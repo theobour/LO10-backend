@@ -47,6 +47,7 @@ elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
         'prenom'=> $body->prenom,
         'nom'=> $body->nom,
         'email'=> $body->email,
+        'password'=> md5($body->password),
         'naissance'=> $body->naissance,
         'telephone'=> $body->telephone,
         'id' => $_GET['id']
