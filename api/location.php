@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     echo $data ? json_encode($data) : '{}';
 
 } elseif ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['aeroport_id']) && isset($_GET['date_debut']) && isset($_GET['date_fin'])) {
-    // Permet de trouver l'ensemble des ressources
+    // Permet de trouver l'ensemble des réservations possible pour un aéroport
 
     $sql = $conn->prepare('SELECT v.id as voiture_id, v.type, v.couleur, v.marque, v.nb_place, v.etat, p.adresse, p.lieu, a.nom, p.id as parking_id, a.id as aeroport_id 
 FROM voiture as v, parking as p, aeroport as a, location as l
@@ -32,6 +32,21 @@ WHERE a.id = :aeroport_loc AND a.id = p.aeroport_id AND l.parking_id = p.id AND 
         'aeroport_loc' => $_GET['aeroport_id'],
         'date_entree' => $_GET['date_debut'],
         'date_sortie' => $_GET['date_fin']
+    );
+    $sql->execute($vars);
+    $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+    // Toujours mettre un header
+    header(status_code_header($data ? 200 : 404));
+    // Si aucune ressource trouvée on renvoie un array vide
+    echo $data ? json_encode($data) : '[]';
+} elseif ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['utilisateur_id'])) {
+    // Permet de trouver l'ensemble des réservations possible pour un aéroport
+
+    $sql = $conn->prepare('SELECT l.*, p.*, a.*, l.prix as prix_location
+FROM location as l, voiture as v, utilisateur as u, parking as p, aeroport as a
+            WHERE l.voiture_id = v.id AND v.proprietaire_id = u.id AND u.id = :utilisateur_id AND l.parking_id = p.id AND p.aeroport_id = a.id');
+    $vars = array(
+        'utilisateur_id' => $_GET['utilisateur_id'],
     );
     $sql->execute($vars);
     $data = $sql->fetchAll(PDO::FETCH_ASSOC);
