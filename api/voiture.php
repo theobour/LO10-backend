@@ -1,7 +1,4 @@
 <?php
-
-
-
 require('../config/header.php');
 require('../config/conn.php');
 
@@ -12,7 +9,7 @@ header("Content-Type: application/json; charset=UTF-8");
 if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // Permet de trouver une ressource avec son id
 
-    $sql = $conn->prepare('SELECT * FROM vehicule WHERE id = :id');
+    $sql = $conn->prepare('SELECT * FROM voiture WHERE id = :id');
     $var = array(
         'id' => $_GET['id']
     );
@@ -23,25 +20,17 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // Si aucune ressource trouvée on renvoie un json vide
     echo $data ? json_encode($data) : '{}';
 
-} elseif ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['aeroport_id']) && isset($_GET['date_debut']) && isset($_GET['date_fin'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
     // Permet de trouver l'ensemble des ressources
 
-    $sql = $conn->prepare('SELECT v.id as voiture_id, v.type, v.couleur, v.marque, v.nb_place, v.etat, p.adresse, p.lieu, a.nom, p.id as parking_id, a.id as aeroport_id 
-FROM voiture as v, parking as p, aeroport as a, location as l
-WHERE a.id = :aeroport_loc AND a.id = p.aeroport_id AND l.parking_id = p.id AND debut_disponibilite <= :date_entree AND fin_disponibilite >= :date_sortie');
-    $vars = array(
-        'aeroport_loc' => $_GET['aeroport_id'],
-        'date_entree' => $_GET['date_debut'],
-        'date_sortie' => $_GET['date_fin']
-    );
-    $sql->execute($vars);
+    $sql = $conn->prepare('SELECT * FROM vehicule');
+    $sql->execute();
     $data = $sql->fetchAll(PDO::FETCH_ASSOC);
     // Toujours mettre un header
     header(status_code_header($data ? 200 : 404));
     // Si aucune ressource trouvée on renvoie un array vide
     echo $data ? json_encode($data) : '[]';
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
+} elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
 
 // Permet de créer une ressource
     $body = json_decode(file_get_contents("php://input"));
@@ -54,8 +43,7 @@ elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
     echo json_encode(array(
         "success" => true
     ));
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
     // Permet de supprimer une ressource
     $sqlDelete = $conn->prepare('DELETE FROM vehicule WHERE id = :id');
     $array = array(
@@ -68,8 +56,7 @@ elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
     echo json_encode(array(
         "success" => true
     ));
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
     // Récupère le body de la requête POST
     $body = json_decode(file_get_contents("php://input"));
     $sqlDelete = $conn->prepare('UPDATE vehicule SET couleur = :couleur WHERE id = :id');
@@ -88,4 +75,4 @@ elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
     // Retourne mauvaise requête si aucune des méthodes précédentes
     header(status_code_header(404));
 }
-
+?>
