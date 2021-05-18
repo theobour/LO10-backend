@@ -20,7 +20,20 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // Si aucune ressource trouvée on renvoie un json vide
     echo $data ? json_encode($data) : '{}';
 
-} elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
+} elseif ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['utilisateur_id'])) {
+    // Permet de récupérer les voitures d'un utilisateur
+
+    $sql = $conn->prepare('SELECT * FROM voiture WHERE proprietaire_id = :id');
+    $sql->execute(array(
+        'id'=>$_GET['utilisateur_id']
+    ));
+    $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+    // Toujours mettre un header
+    header(status_code_header($data ? 200 : 404));
+    // Si aucune ressource trouvée on renvoie un array vide
+    echo $data ? json_encode($data) : '[]';
+}
+elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
     // Permet de trouver l'ensemble des ressources
 
     $sql = $conn->prepare('SELECT * FROM vehicule');

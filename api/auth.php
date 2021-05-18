@@ -6,12 +6,14 @@ require('../config/conn.php');
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-if ($_SERVER['REQUEST_METHOD'] == "GET") {
+if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // TODO : pour récupérer un profil
 
-    $sql = $conn->prepare('SELECT * FROM vehicule');
-    $sql->execute();
-    $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+    $sql = $conn->prepare('SELECT * FROM utilisateur WHERE id = :id');
+    $sql->execute(array(
+        'id'=>$_GET['id']
+    ));
+    $data = $sql->fetch(PDO::FETCH_ASSOC);
     // Toujours mettre un header
     header(status_code_header($data ? 200 : 404));
     // Si aucune ressource trouvée on renvoie un array vide
