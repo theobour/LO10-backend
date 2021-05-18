@@ -1,7 +1,6 @@
 <?php
 
 
-
 require('../config/header.php');
 require('../config/conn.php');
 
@@ -40,22 +39,24 @@ WHERE a.id = :aeroport_loc AND a.id = p.aeroport_id AND l.parking_id = p.id AND 
     header(status_code_header($data ? 200 : 404));
     // Si aucune ressource trouvée on renvoie un array vide
     echo $data ? json_encode($data) : '[]';
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
+} elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-// Permet de créer une ressource
+// Permet de créer une location
     $body = json_decode(file_get_contents("php://input"));
-    $sql = $conn->prepare('INSERT INTO aeroport (aeroport) VALUES (:name)');
+    $sql = $conn->prepare('INSERT INTO location (voiture_id,parking_id,debut_disponibilite,fin_disponibilite,prix) VALUES (:voiture_id,:parking_id,:debut_disponibilite,:fin_disponibilite,:prix)');
     $var = array(
-        'name' => $body->aeroport
+        "voiture_id" => $body->voiture_id,
+        "parking_id" => $body->parking_id,
+        "debut_disponibilite" => $body->debut_disponibilite,
+        "fin_disponibilite" => $body->fin_disponibilite,
+        "prix" => $body->prix
     );
     $response = $sql->execute($var);
     header(status_code_header(201));
     echo json_encode(array(
         "success" => true
     ));
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
     // Permet de supprimer une ressource
     $sqlDelete = $conn->prepare('DELETE FROM vehicule WHERE id = :id');
     $array = array(
@@ -68,8 +69,7 @@ elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
     echo json_encode(array(
         "success" => true
     ));
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
     // Récupère le body de la requête POST
     $body = json_decode(file_get_contents("php://input"));
     $sqlDelete = $conn->prepare('UPDATE vehicule SET couleur = :couleur WHERE id = :id');
