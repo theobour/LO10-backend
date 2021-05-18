@@ -19,6 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // Si aucune ressource trouvée on renvoie un array vide
     echo $data ? json_encode($data) : '[]';
 }
+elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
+    // TODO : pour récupérer un profil
+
+    $sql = $conn->prepare('SELECT * FROM utilisateur');
+    $sql->execute();
+    $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+    // Toujours mettre un header
+    header(status_code_header($data ? 200 : 404));
+    // Si aucune ressource trouvée on renvoie un array vide
+    echo $data ? json_encode($data) : '[]';
+}
 elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
 // Permet de créer une ressource
     $body = json_decode(file_get_contents("php://input"));
