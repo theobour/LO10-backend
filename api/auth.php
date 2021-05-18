@@ -39,6 +39,26 @@ elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
         echo 'false';
     }
 }
+elseif ($_SERVER['REQUEST_METHOD'] == "PUT" && isset($_GET['id'])) {
+    // Récupère le body de la requête POST
+    $body = json_decode(file_get_contents("php://input"));
+    $sqlDelete = $conn->prepare('UPDATE utilisateur SET prenom = :prenom, nom = :nom, email = :email, naissance = :naissance, telephone = :telephone  WHERE id = :id');
+    $array = array(
+        'prenom'=> $body->prenom,
+        'nom'=> $body->nom,
+        'email'=> $body->email,
+        'naissance'=> $body->naissance,
+        'telephone'=> $body->telephone,
+        'id' => $_GET['id']
+    );
+    $sqlDelete->execute($array);
+    // Toujours mettre un header
+    header(status_code_header(200));
+    // Si aucune ressource trouvée on renvoie un array vide
+    echo json_encode(array(
+        "success" => true
+    ));
+}
 else {
     // Retourne mauvaise requête si aucune des méthodes précédentes
     header(status_code_header(404));
