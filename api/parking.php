@@ -20,6 +20,23 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // Si aucune ressource trouvée on renvoie un json vide
     echo $data ? json_encode($data) : '{}';
 
+} elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
+
+// Création d'un nouvel aeroport
+    $body = json_decode(file_get_contents("php://input"));
+    $sql = $conn->prepare('INSERT INTO parking (nb_places,lieu,aeroport_id,prix,adresse) VALUES (:nb_places,:lieu,:aeroport_id,:prix, :adresse)');
+    $var = array(
+        "nb_places" =>$body->nb_places,
+        "lieu" =>$body->lieu,
+        "aeroport_id" =>$body->aeroport_id,
+        "prix" =>$body->prix,
+        "adresse" => $body->adresse
+    );
+    $response = $sql->execute($var);
+    header(status_code_header(201));
+    echo json_encode(array(
+        "success" => true
+    ));
 }
 elseif ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['aeroport_id'])) {
     // Permet de trouver l'ensemble des parkings d'un aeroport

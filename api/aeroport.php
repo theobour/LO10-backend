@@ -32,11 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     echo $data ? json_encode($data) : '[]';
 } elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-// Permet de créer une ressource
+// Création d'un nouvel aeroport
     $body = json_decode(file_get_contents("php://input"));
-    $sql = $conn->prepare('INSERT INTO aeroport (aeroport) VALUES (:name)');
+    $sql = $conn->prepare('INSERT INTO aeroport (nom,code) VALUES (:nom,:code)');
     $var = array(
-        'name' => $body->aeroport
+        'nom'=>$body->nom,
+        'code'=>$body->code
     );
     $response = $sql->execute($var);
     header(status_code_header(201));
