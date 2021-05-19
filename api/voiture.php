@@ -44,8 +44,28 @@ elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
     // Si aucune ressource trouvée on renvoie un array vide
     echo $data ? json_encode($data) : '[]';
 }
+elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
+// Permet de créer une ressource
+    $body = json_decode(file_get_contents("php://input"));
+    $sql = $conn->prepare('INSERT INTO voiture (proprietaire_id,couleur,marque,nb_place,etat,type) VALUES (:proprietaire_id,:couleur,:marque,:nb_place,:etat,:type)');
+    $var = array(
+        "type"=>$body->type,
+        "couleur"=>$body->couleur,
+        "marque"=>$body->marque,
+        "nb_place"=>$body->nb_place,
+        "etat"=>$body->etat,
+        "proprietaire_id"=>$body->proprietaire_id
+    );
+
+    $sql->execute($var);
+    header(status_code_header(201));
+    echo json_encode(array(
+        "success" => true
+    ));
+}
 elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
-    // Permet de supprimer une ressource
+    // Permet de supprimer une voiture
+    // key_check =0 pour éviter de check les foreign key
     $sqlDelete = $conn->prepare('DELETE FROM voiture WHERE id = :id');
     $array = array(
         'id' => $_GET['id']
