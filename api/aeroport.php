@@ -1,6 +1,7 @@
 <?php
 require('../config/header.php');
 require('../config/conn.php');
+require('auth_check.php');
 
 // Pour retourner du JSON partout
 header("Access-Control-Allow-Origin: *");
@@ -22,14 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
 
 } elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
     // Permet de trouver l'ensemble des ressources
-
+    $headers = apache_request_headers();
+    if (isset($headers['Authorization']) && $headers['Authorization'] !== '') {
+        $headers_check = check_auth($headers['Authorization'], $conn);
+        if($headers_check === false) {
+            header(status_code_header(401));
+            return;
+        }
+    }
     $sql = $conn->prepare('SELECT * FROM aeroport');
     $sql->execute();
     $data = $sql->fetchAll(PDO::FETCH_ASSOC);
     // Toujours mettre un header
     header(status_code_header($data ? 200 : 404));
     // Si aucune ressource trouvée on renvoie un array vide
-    echo $data ? json_encode($data) : '[]';
+    // echo $data ? json_encode($data) : '[]';
 } elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
 
 // Création d'un nouvel aeroport
