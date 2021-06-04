@@ -1,29 +1,50 @@
-# Structure de fichier
+# Route de l'api
 
-## Dossier config
+## API du site
 
-### conn.php
+### Aeroport
 
-Contient les informations pour se connecter à la base de donnée.
+* GET /api/aeroport.php (AUTH): retourne l'ensemble des aéroports partenaires
+* POST /api/aeroport.php : créer un aéroport
 
-### header.php
+### Location
 
-Contient l'ensemble des status possibles pour le code de réponse. Il contient la fonction status_code_header qui prend en entrée un status code et retourne le header bien formaté.
+* GET /api/location.php (utilisateur_id) : retourne les locations d'un utilisateur
+* POST /api/location.php : créer une location
+* GET /api/location.php (aeroport_id, date_debut, date_fin) : retourne les réservations possibles
 
-## Dossier API
+### Voiture
 
-Le dossier API contient une page example.php qui est un template pour les autres pages. Dans cette exemple sont présents 5 routes :
-* Trouver un élément particulier avec id=X -> nécessite ?id=
-* Trouver l'ensemble des éléments
-* Créer un élément -> accepte un JSON
-* Modifier un élément -> accepte un JSON et nécessite ?id=
-* Supprimer un élément -> nécessite ?id=
+* GET /api/voiture.php (id) : retourne une voiture
+* DELETE /api/voiture.php (id) : supprime une voiture
+* GET /api/voiture.php (utilisateur_id) : retourne les voitures d'un utilisateur
+* POST /api/voiture.php : pour créer une voiture
+  
+### Parking
 
-Pour les requêtes sur la base de donnée nous utilisons PDO.
+* GET /api/parking.php (id) : retourne un parking
+* GET /api/parking.php (aeroport_id) : retourne les parkings d'un aéroport
+* GET /api/parking.php : retourne l'ensemble des parkings
+* POST /api/parking.php : créer un parking
 
-Il faudra faire une page par élément que nous souhaitons traiter. Ex : pour récupérer, créer, modifier, ... les véhicules il faudra créer vehicule.php. Pour garder en cohéerence intérogera la même base de donnée sur chaque page (pas comme sur l'exemple où pour chaque méthode une autre table est requêtée)
+### Utilisateurs
 
-Avant de retourner une réponse on assigne toujours un header à la réponse :
-```
-header(status_code_header(STATUS_CODE));
-```
+* POST /api/auth.php : pour se connecter, retourne le profil de l'utilisateur
+* GET /api/auth.php (id) : retourne le profil d'un utilisateur
+* GET /api/auth.php : retourne l'ensemble des utilisateurs
+* PUT /api/auth.php (id) : modifie un utilisateur
+* POST /api/signin.php : pour créer un utilisateur
+
+### Réservations
+
+* POST /api/reservation.php : créer une réservation
+* GET /api/reservation.php (locataire_id) : retourne les réservations d'un utilisateur
+  
+
+
+
+## API ouverte pour l'extérieur
+
+* GET /api/services/parking.php : retourne l'ensemble des parkings partenaires
+* GET /api/services/location.php (param : aeroport_id, date_debut, date_fin) : retourne l'ensemble des voitures disponibles entre deux dates pour un aéroport donné
+* /api/services/aeroport.php : retourne l'ensemble des aéroports partenaires
