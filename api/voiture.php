@@ -1,6 +1,7 @@
 <?php
 require('../config/header.php');
 require('../config/conn.php');
+require('auth_check.php');
 
 // Pour retourner du JSON partout
 header("Access-Control-Allow-Origin: *");
@@ -22,18 +23,22 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
 
 } elseif ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['utilisateur_id'])) {
     // Permet de récupérer les voitures d'un utilisateur
-
-    $sql = $conn->prepare('SELECT * FROM voiture WHERE proprietaire_id = :id');
-    $sql->execute(array(
-        'id'=>$_GET['utilisateur_id']
-    ));
-    $data = $sql->fetchAll(PDO::FETCH_ASSOC);
-    // Toujours mettre un header
-    header(status_code_header($data ? 200 : 404));
-    // Si aucune ressource trouvée on renvoie un array vide
-    echo $data ? json_encode($data) : '[]';
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
+    $auth = check_auth(apache_request_headers(), $conn);
+    if ($auth === true) {
+        $sql = $conn->prepare('SELECT * FROM voiture WHERE proprietaire_id = :id');
+        $sql->execute(array(
+            'id' => $_GET['utilisateur_id']
+        ));
+        $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+        // Toujours mettre un header
+        header(status_code_header($data ? 200 : 404));
+        // Si aucune ressource trouvée on renvoie un array vide
+        echo $data ? json_encode($data) : '[]';
+    } else {
+        header(status_code_header(401));
+        return;
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
     // Permet de trouver l'ensemble des ressources
 
     $sql = $conn->prepare('SELECT * FROM vehicule');
@@ -43,18 +48,17 @@ elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
     header(status_code_header($data ? 200 : 404));
     // Si aucune ressource trouvée on renvoie un array vide
     echo $data ? json_encode($data) : '[]';
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
+} elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
 // Permet de créer une ressource
     $body = json_decode(file_get_contents("php://input"));
     $sql = $conn->prepare('INSERT INTO voiture (proprietaire_id,couleur,marque,nb_place,etat,type) VALUES (:proprietaire_id,:couleur,:marque,:nb_place,:etat,:type)');
     $var = array(
-        "type"=>$body->type,
-        "couleur"=>$body->couleur,
-        "marque"=>$body->marque,
-        "nb_place"=>$body->nb_place,
-        "etat"=>$body->etat,
-        "proprietaire_id"=>$body->proprietaire_id
+        "type" => $body->type,
+        "couleur" => $body->couleur,
+        "marque" => $body->marque,
+        "nb_place" => $body->nb_place,
+        "etat" => $body->etat,
+        "proprietaire_id" => $body->proprietaire_id
     );
 
     $sql->execute($var);
@@ -62,23 +66,26 @@ elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
     echo json_encode(array(
         "success" => true
     ));
-}
-elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] == "DELETE" && isset($_GET['id'])) {
     // Permet de supprimer une voiture
-    // key_check =0 pour éviter de check les foreign key
-    $sqlDelete = $conn->prepare('DELETE FROM voiture WHERE id = :id');
-    $array = array(
-        'id' => $_GET['id']
-    );
-    $sqlDelete->execute($array);
-    // Toujours mettre un header
-    header(status_code_header(200));
-    // Si aucune ressource trouvée on renvoie un array vide
-    echo json_encode(array(
-        "success" => true
-    ));
-}
-else {
+    $auth = check_auth(apache_request_headers(), $conn);
+    if ($auth === true) {
+        $sqlDelete = $conn->prepare('DELETE FROM voiture WHERE id = :id');
+        $array = array(
+            'id' => $_GET['id']
+        );
+        $sqlDelete->execute($array);
+        // Toujours mettre un header
+        header(status_code_header(200));
+        // Si aucune ressource trouvée on renvoie un array vide
+        echo json_encode(array(
+            "success" => true
+        ));
+    } else {
+        header(status_code_header(401));
+        return;
+    }
+} else {
     // Retourne mauvaise requête si aucune des méthodes précédentes
     header(status_code_header(404));
 }
