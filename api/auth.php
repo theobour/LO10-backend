@@ -2,6 +2,7 @@
 require('../config/header.php');
 require('../config/conn.php');
 require('auth_check.php');
+require_once 'vendor/autoload.php'; // google api library
 // Pour retourner du JSON partout
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -25,7 +26,22 @@ if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) {
     // Si aucune ressource trouvée on renvoie un array vide
     echo $data ? json_encode($data) : '[]';
 } elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
-// Permet de créer une ressource
+	// Permet de créer une ressource
+	
+	// si google connection 
+	if (isset($_POST["idtoken"]) and $_POST["idtoken"]) {
+		$id_token = $_POST["idtoken"];
+		$client = new Google_Client(['client_id' => "288668940272-g28dac5l6q3dbo7lep91tfuac86pjdlf.apps.googleusercontent.com"]);  // Specify the CLIENT_ID of the app that accesses the backend
+		$payload = $client->verifyIdToken($id_token); // need google api library
+		if ($payload) {
+			$userid = $payload['sub'];
+			// print_r($payload); // to check what you can call
+		} else {
+			echo "Invalid ID token";
+		}
+	}
+	// je vois pas comment adapter le code pour l'instant
+
     $body = json_decode(file_get_contents("php://input"));
     $password = md5($body->password);
     $pseudo = $body->pseudo;
